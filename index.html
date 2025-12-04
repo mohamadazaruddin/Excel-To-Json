@@ -1,0 +1,104 @@
+<! DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Excel to JSON Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f8f8f8;
+        padding: 30px;
+      }
+      .container {
+        background: #fff;
+        max-width: 600px;
+        margin: 30px auto;
+        padding: 24px 32px;
+        border-radius: 8px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+      }
+      h2 {
+        margin-top: 0;
+      }
+      input[type="file"] {
+        margin-top: 8px;
+      }
+      pre {
+        background: #f6f8fa;
+        padding: 18px;
+        border-radius: 6px;
+        margin-top: 22px;
+        font-size: 13px;
+        max-height: 400px;
+        overflow: auto;
+      }
+      button {
+        margin-top: 18px;
+        background: #6728dd;
+        color: #fff;
+        border: none;
+        padding: 10px 22px;
+        border-radius: 5px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      button:active {
+        background: #005587;
+      }
+      #copied-msg {
+        color: #43b02a;
+        margin-left: 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Excel to JSON Converter</h2>
+      <input type="file" id="input" accept=".xlsx, .xls" />
+      <div id="result" style="display: none">
+        <h3>JSON Preview</h3>
+        <pre id="jsonPreview"></pre>
+        <button id="copyBtn">Copy JSON</button><span id="copied-msg"></span>
+      </div>
+    </div>
+    <script>
+      const input = document.getElementById("input");
+      const result = document.getElementById("result");
+      const jsonPreview = document.getElementById("jsonPreview");
+      const copyBtn = document.getElementById("copyBtn");
+      const copiedMsg = document.getElementById("copied-msg");
+      let jsonData = "";
+
+      input.addEventListener("change", (evt) => {
+        const file = evt.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          // Take the first sheet by default
+          const firstSheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+          jsonData = JSON.stringify(json, null, 2);
+          jsonPreview.textContent = jsonData;
+          result.style.display = "block";
+          copiedMsg.textContent = "";
+        };
+        reader.readAsArrayBuffer(file);
+      });
+
+      copyBtn.addEventListener("click", () => {
+        if (!jsonData) return;
+        navigator.clipboard.writeText(jsonData).then(() => {
+          copiedMsg.textContent = "Copied!";
+          setTimeout(() => {
+            copiedMsg.textContent = "";
+          }, 1500);
+        });
+      });
+    </script>
+  </body>
+</html>
