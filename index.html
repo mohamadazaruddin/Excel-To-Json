@@ -72,23 +72,31 @@
       let jsonData = "";
 
       input.addEventListener("change", (evt) => {
-        const file = evt.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          // Take the first sheet by default
-          const firstSheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[firstSheetName];
-          const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-          jsonData = JSON.stringify(json, null, 2);
-          jsonPreview.textContent = jsonData;
-          result.style.display = "block";
-          copiedMsg.textContent = "";
-        };
-        reader.readAsArrayBuffer(file);
-      });
+  const file = evt.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+
+    const firstSheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[firstSheetName];
+
+    const json = XLSX.utils.sheet_to_json(sheet, {
+      defval: "",
+      raw: false
+    });
+
+    const jsonData = JSON.stringify(json, null, 2);
+    jsonPreview.textContent = jsonData;
+    result.style.display = "block";
+    copiedMsg.textContent = "";
+  };
+
+  reader.readAsArrayBuffer(file);
+});
 
       copyBtn.addEventListener("click", () => {
         if (!jsonData) return;
